@@ -1,19 +1,10 @@
-```
-       _                         ______  ___ _____
-      (_)                        | ___ \/ _ \_   _|
-  __ _ _ _ __ ___  _ __ ___   ___| |_/ / /_\ \| |____
- / _` | | '_ ` _ \| '_ ` _ \ / _ \  __/|  _  || |_  /
-| (_| | | | | | | | | | | | |  __/ |   | | | || |/ /
- \__, |_|_| |_| |_|_| |_| |_|\___\_|   \_| |_/\_/___|
-  __/ |
- |___/      "GitHub Personal Access Token recon tool"
- ----------------------------------------------------
-                                           by @6mile
-```
+![gimmePATz](gimmepatz-github-banner.png)
 
 **gimmePATz - GitHub Personal Access Token Analysis & Repository Discovery Tool**
 
-A comprehensive Python script that analyzes GitHub Personal Access Tokens (PATs) to determine their permissions and discover accessible repositories. Perfect for security audits, token management, and understanding your GitHub access scope.
+Have you ever found a GitHub PAT (personal access token) and wondered if it was valid or not?  If so, this tool is for you!  This tool should be useful for pentesters, bug bounty peeps and red team ninjas.  gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories or GitHub Organizations the PAT is attached too as well.
+
+gimmepatz supports JSON output as well, so you can run it inline with other offensive security tools and filter using jq.  You can see some of my examples below.
 
 ## Features
 
@@ -44,11 +35,6 @@ A comprehensive Python script that analyzes GitHub Personal Access Tokens (PATs)
 2. **Install dependencies**
    ```bash
    pip install requests
-   ```
-
-3. **Make executable (optional)**
-   ```bash
-   chmod +x github_pat_checker.py
    ```
 
 ## Usage
@@ -202,7 +188,7 @@ import json
 def analyze_github_token(token):
     """Analyze a GitHub token and return structured data."""
     result = subprocess.run([
-        'python', 'github_pat_checker.py', token, '--json'
+        'python', 'gimmepatz.py', token, '--json'
     ], capture_output=True, text=True)
     
     if result.returncode == 0:
@@ -224,7 +210,7 @@ if token_data and token_data['token_valid']:
 #!/bin/bash
 
 TOKEN="ghp_your_token_here"
-OUTPUT=$(python github_pat_checker.py "$TOKEN" --json)
+OUTPUT=$(python gimmepatz.py "$TOKEN" --json)
 
 # Extract information using jq
 if command -v jq &> /dev/null; then
@@ -238,6 +224,11 @@ if command -v jq &> /dev/null; then
 else
     echo "jq not installed. Install with: apt-get install jq"
 fi
+```
+
+```bash
+#!/bin/bash
+python3 gimmepatz.py 
 ```
 
 ## Token Scopes Reference
@@ -267,7 +258,7 @@ fi
 2. **Use environment variables for tokens**
    ```bash
    export GITHUB_TOKEN="your_token_here"
-   python github_pat_checker.py "$GITHUB_TOKEN"
+   python gimmepatz.py "$GITHUB_TOKEN"
    ```
 3. **Regularly audit your tokens** using this tool
 4. **Use minimal required scopes** for each token
