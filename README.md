@@ -21,40 +21,28 @@ gimmepatz supports JSON output as well, so you can run it inline with other offe
 ### Basic Usage
 
 ```bash
-python gimmepatz.py YOUR_GITHUB_TOKEN
+python gimmepatz.py GITHUB_TOKEN
 ```
 
 ### Advanced Usage
 
 ```bash
 # Include organization repositories
-python gimmepatz.py YOUR_GITHUB_TOKEN --org your-org-name
+python gimmepatz.py GITHUB_TOKEN --org GITHUB_ORGANIZATION
 
 # JSON output for scripting
-python gimmepatz.py YOUR_GITHUB_TOKEN --json
+python gimmepatz.py GITHUB_TOKEN --json
 
 # Combined: organization repos + JSON output
-python gimmepatz.py YOUR_GITHUB_TOKEN --org your-org-name --json
+python gimmepatz.py GITHUB_TOKEN --org GITHUB_ORGANIZATION --json
 ```
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.6 or higher
-- `requests` library
-
-### Setup
-
-1. **Clone or download the script**
-   ```bash
-   git clone https://github.com/6mile/gimmepatz.git
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install requests
-   ```
+**Clone or download the script**
+```bash
+git clone https://github.com/6mile/gimmepatz.git
+```
 
 ### Command Line Options
 
