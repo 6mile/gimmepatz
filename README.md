@@ -1,6 +1,6 @@
 ![gimmePATz](gimmepatz-github-banner.png)
 
-**gimmePATz - GitHub Personal Access Token Analysis & Repository Discovery Tool**
+**gimmePATz - GitHub Personal Access Token (PAT) recon tool**
 
 Have you ever found a GitHub PAT (personal access token) and wondered if it was valid or not?  If so, this tool is for you!  This tool should be useful for pentesters, bug bounty peeps and red team ninjas.  gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories or GitHub Organizations the PAT is attached too as well.
 
@@ -8,34 +8,13 @@ gimmepatz supports JSON output as well, so you can run it inline with other offe
 
 ## Features
 
-- 🔍 **Token Validation** - Verify if your PAT is valid and active
+- 🔍 **Token Validation** - Verify if the PAT you found is valid and what does it have access to?
 - 🔑 **Permission Analysis** - Detailed breakdown of token scopes with descriptions
-- 📊 **Rate Limit Monitoring** - Current API usage and limits
-- 👤 **User Information** - Details about the authenticated user
-- 📁 **Repository Discovery** - Find all accessible repositories
-- 🔒 **Privacy Separation** - Clearly distinguish between private and public repos
-- 🏢 **Organization Support** - Include specific organization repositories
+- 👤 **User Information** - Details about the user that created the PAT
+- 📁 **Repository Discovery** - Find all repositories attached to this PAT
 - 📋 **JSON Output** - Machine-readable format for automation
-- 🎨 **Clean Interface** - User-friendly output with emojis and formatting
-
-## Installation
-
-### Prerequisites
-
-- Python 3.6 or higher
-- `requests` library
-
-### Setup
-
-1. **Clone or download the script**
-   ```bash
-   git clone https://github.com/6mile/gimmepatz.git
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install requests
-   ```
+- 🔒 **Privacy Separation** - Clearly distinguish between private and public repos
+- 🏢 **Organization Support** - Tells you what organizations are attached to this PAT
 
 ## Usage
 
@@ -57,6 +36,25 @@ python gimmepatz.py YOUR_GITHUB_TOKEN --json
 # Combined: organization repos + JSON output
 python gimmepatz.py YOUR_GITHUB_TOKEN --org your-org-name --json
 ```
+
+## Installation
+
+### Prerequisites
+
+- Python 3.6 or higher
+- `requests` library
+
+### Setup
+
+1. **Clone or download the script**
+   ```bash
+   git clone https://github.com/6mile/gimmepatz.git
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install requests
+   ```
 
 ### Command Line Options
 
