@@ -1,4 +1,4 @@
-![gimmePATz](gimmepatz-github-banner.png)
+![gimmePATz](gimmepatz-github-banner.jpg)
 
 **gimmePATz - GitHub Personal Access Token Analysis & Repository Discovery Tool**
 
