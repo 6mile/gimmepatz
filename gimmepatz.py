@@ -169,6 +169,210 @@ class GitHubPATChecker:
 
         return organizations
 
+    def get_user_variables(self) -> List[Dict]:
+        """Get variables accessible to the authenticated user."""
+        variables = []
+        
+        try:
+            # GitHub doesn't have user-level variables in the same way as secrets
+            # Variables are typically at repository or organization level
+            # This function is kept for consistency but may return empty results
+            pass
+        except requests.RequestException:
+            pass
+        
+        return variables
+
+    def get_organization_variables(self, org_login: str) -> List[Dict]:
+        """Get variables accessible in a specific organization."""
+        variables = []
+        
+        try:
+            # Get organization-level variables
+            response = self.session.get(f"{self.base_url}/orgs/{org_login}/actions/variables")
+            if response.status_code == 200:
+                data = response.json()
+                for var in data.get('variables', []):
+                    variables.append({
+                        "name": var.get("name", ""),
+                        "value": var.get("value", "[Hidden]"),
+                        "created_at": var.get("created_at", ""),
+                        "updated_at": var.get("updated_at", ""),
+                        "visibility": var.get("visibility", "private"),
+                        "scope": "organization",
+                        "owner": org_login
+                    })
+            elif response.status_code == 404:
+                # Organization might not have variables enabled or accessible
+                pass
+        except requests.RequestException:
+            pass
+        
+        return variables
+
+    def get_user_secrets(self) -> List[Dict]:
+        """Get secrets accessible to the authenticated user."""
+        secrets = []
+        
+        try:
+            # GitHub doesn't have user-level secrets in the traditional sense
+            # Secrets are at repository, organization, or environment level
+            # This function is kept for consistency but may return empty results
+            pass
+        except requests.RequestException:
+            pass
+        
+        return secrets
+
+    def get_organization_secrets(self, org_login: str) -> List[Dict]:
+        """Get secrets accessible in a specific organization."""
+        secrets = []
+        
+        try:
+            # Get organization-level secrets
+            response = self.session.get(f"{self.base_url}/orgs/{org_login}/actions/secrets")
+            if response.status_code == 200:
+                data = response.json()
+                for secret in data.get('secrets', []):
+                    secrets.append({
+                        "name": secret.get("name", ""),
+                        "created_at": secret.get("created_at", ""),
+                        "updated_at": secret.get("updated_at", ""),
+                        "visibility": secret.get("visibility", "private"),
+                        "scope": "organization",
+                        "owner": org_login
+                    })
+            elif response.status_code == 404:
+                # Organization might not have secrets or not accessible
+                pass
+            elif response.status_code == 403:
+                # Insufficient permissions
+                pass
+        except requests.RequestException:
+            pass
+        
+        return secrets
+
+    def get_repository_secrets(self, repo_full_name: str) -> List[Dict]:
+        """Get secrets accessible in a specific repository."""
+        secrets = []
+        
+        try:
+            response = self.session.get(f"{self.base_url}/repos/{repo_full_name}/actions/secrets")
+            if response.status_code == 200:
+                data = response.json()
+                for secret in data.get('secrets', []):
+                    secrets.append({
+                        "name": secret.get("name", ""),
+                        "created_at": secret.get("created_at", ""),
+                        "updated_at": secret.get("updated_at", ""),
+                        "scope": "repository",
+                        "owner": repo_full_name.split('/')[0],
+                        "repository": repo_full_name
+                    })
+            elif response.status_code == 404:
+                # Repository might not have secrets or not accessible
+                pass
+            elif response.status_code == 403:
+                # Insufficient permissions
+                pass
+        except requests.RequestException:
+            pass
+        
+        return secrets
+
+    def get_all_accessible_secrets(self, check_repos: bool = False, check_orgs: bool = False) -> Dict[str, List[Dict]]:
+        """Get all secrets accessible to the PAT across different scopes."""
+        all_secrets = {
+            "user": [],
+            "organizations": [],
+            "repositories": []
+        }
+        
+        # Get user secrets
+        all_secrets["user"] = self.get_user_secrets()
+        
+        # Get organization secrets if requested
+        if check_orgs:
+            organizations = self.get_user_organizations(suppress_warnings=True)
+            for org in organizations:
+                org_secrets = self.get_organization_secrets(org['login'])
+                all_secrets["organizations"].extend(org_secrets)
+        
+        # Get repository secrets if requested
+        if check_repos:
+            repositories = self.get_accessible_repositories()
+            # Limit to first 10 repos to avoid rate limiting
+            for repo in repositories[:10]:
+                repo_secrets = self.get_repository_secrets(repo['name'])
+                all_secrets["repositories"].extend(repo_secrets)
+        
+        return all_secrets
+
+    def get_repository_variables(self, repo_full_name: str) -> List[Dict]:
+        """Get variables accessible in a specific repository."""
+        variables = []
+        
+        try:
+            response = self.session.get(f"{self.base_url}/repos/{repo_full_name}/actions/variables")
+            if response.status_code == 200:
+                data = response.json()
+                for var in data.get('variables', []):
+                    variables.append({
+                        "name": var.get("name", ""),
+                        "value": var.get("value", "[Hidden]"),
+                        "created_at": var.get("created_at", ""),
+                        "updated_at": var.get("updated_at", ""),
+                        "scope": "repository",
+                        "owner": repo_full_name.split('/')[0],
+                        "repository": repo_full_name
+                    })
+            elif response.status_code == 404:
+                # Repository might not have variables or not accessible
+                pass
+            elif response.status_code == 403:
+                # Insufficient permissions
+                pass
+        except requests.RequestException:
+            pass
+        
+        return variables
+
+    def get_all_accessible_variables(self, check_repos: bool = False, check_orgs: bool = False) -> Dict[str, List[Dict]]:
+        """Get all variables accessible to the PAT across different scopes."""
+        all_variables = {
+            "user": [],
+            "organizations": [],
+            "repositories": []
+        }
+        
+        # Get user variables
+        all_variables["user"] = self.get_user_variables()
+        
+        # Get organization variables if requested
+        if check_orgs:
+            organizations = self.get_user_organizations(suppress_warnings=True)
+            for org in organizations:
+                org_vars = self.get_organization_variables(org['login'])
+                all_variables["organizations"].extend(org_vars)
+        
+        # Get repository variables if requested
+        if check_repos:
+            repositories = self.get_accessible_repositories()
+            # Limit to first 10 repos to avoid rate limiting
+            for repo in repositories[:10]:
+                repo_vars = self.get_repository_variables(repo['name'])
+                all_variables["repositories"].extend(repo_vars)
+        
+        return all_variables
+
+    def get_all_accessible_variables_and_secrets(self, check_repos: bool = False, check_orgs: bool = False) -> Dict:
+        """Get all variables and secrets accessible to the PAT."""
+        return {
+            "variables": self.get_all_accessible_variables(check_repos, check_orgs),
+            "secrets": self.get_all_accessible_secrets(check_repos, check_orgs)
+        }
+
     def get_user_role_in_org(self, org_login: str, user_login: str) -> str:
         """Get the user's role in a specific organization."""
         if not org_login or not user_login:
@@ -399,7 +603,7 @@ class GitHubPATChecker:
             description = scope_descriptions.get(scope, "Unknown scope")
             print(f"  {scope}: {description}")
 
-    def generate_json_output(self, org_name: Optional[str] = None) -> Dict:
+    def generate_json_output(self, org_name: Optional[str] = None, include_variables: bool = False) -> Dict:
         """Generate a simplified JSON output for use in other scripts."""
         output = {
             "token_valid": False,
@@ -407,6 +611,16 @@ class GitHubPATChecker:
             "organizations": [],
             "scopes": [],
             "rate_limit": {},
+            "variables": {
+                "user": [],
+                "organizations": [],
+                "repositories": []
+            },
+            "secrets": {
+                "user": [],
+                "organizations": [],
+                "repositories": []
+            },
             "repositories": {
                 "total": 0,
                 "private": [],
@@ -417,7 +631,9 @@ class GitHubPATChecker:
                 "private_count": 0,
                 "public_count": 0,
                 "owners": [],
-                "organizations_count": 0
+                "organizations_count": 0,
+                "variables_count": 0,
+                "secrets_count": 0
             }
         }
         
@@ -472,6 +688,24 @@ class GitHubPATChecker:
                 "reset": core_rate.get("reset")
             }
         
+        # Get variables and secrets if requested
+        if include_variables:
+            vars_and_secrets = self.get_all_accessible_variables_and_secrets(check_repos=True, check_orgs=True)
+            output["variables"] = vars_and_secrets["variables"]
+            output["secrets"] = vars_and_secrets["secrets"]
+            
+            # Count total variables and secrets
+            total_variables = (len(vars_and_secrets["variables"]["user"]) + 
+                             len(vars_and_secrets["variables"]["organizations"]) + 
+                             len(vars_and_secrets["variables"]["repositories"]))
+            
+            total_secrets = (len(vars_and_secrets["secrets"]["user"]) + 
+                           len(vars_and_secrets["secrets"]["organizations"]) + 
+                           len(vars_and_secrets["secrets"]["repositories"]))
+        else:
+            total_variables = 0
+            total_secrets = 0
+        
         # Get repositories
         repositories = self.get_accessible_repositories()
         if org_name:
@@ -512,17 +746,19 @@ class GitHubPATChecker:
             "private_count": len(private_repos),
             "public_count": len(public_repos),
             "owners": sorted(list(owners)),
-            "organizations_count": len(organizations)
+            "organizations_count": len(organizations),
+            "variables_count": total_variables,
+            "secrets_count": total_secrets
         }
         
         return output
 
     def run_analysis(self, org_name: Optional[str] = None, json_output: bool = False, 
                      download: bool = False, download_path: str = "repos", 
-                     download_type: str = "all"):
+                     download_type: str = "all", include_variables: bool = False):
         """Run the complete analysis of the PAT."""
         if json_output:
-            output = self.generate_json_output(org_name)
+            output = self.generate_json_output(org_name, include_variables)
             print(json.dumps(output, indent=2))
             return
         
@@ -539,7 +775,6 @@ class GitHubPATChecker:
  ----------------------------------------------------
                                            by @6mile
         """)
-
         # Check if token is valid
         if not self.check_token_validity():
             print("❌ Invalid token or network error")
@@ -674,6 +909,112 @@ class GitHubPATChecker:
         else:
             print("   No repositories found or accessible")
         
+        # Get variables and secrets if requested
+        if include_variables:
+            print(f"\n🔑 Accessible Variables & Secrets:")
+            vars_and_secrets = self.get_all_accessible_variables_and_secrets(check_repos=True, check_orgs=True)
+            
+            variables = vars_and_secrets["variables"]
+            secrets = vars_and_secrets["secrets"]
+            
+            total_vars = (len(variables["user"]) + 
+                         len(variables["organizations"]) + 
+                         len(variables["repositories"]))
+            
+            total_secrets = (len(secrets["user"]) + 
+                           len(secrets["organizations"]) + 
+                           len(secrets["repositories"]))
+            
+            print(f"   Found {total_vars} variables and {total_secrets} secrets:")
+            print(f"   • Variables: {len(variables['user'])} user, {len(variables['organizations'])} org, {len(variables['repositories'])} repo")
+            print(f"   • Secrets: {len(secrets['user'])} user, {len(secrets['organizations'])} org, {len(secrets['repositories'])} repo")
+            
+            # Display user variables and secrets
+            if variables["user"] or secrets["user"]:
+                print(f"\n👤 User Variables & Secrets:")
+                if variables["user"]:
+                    print(f"   📄 Variables ({len(variables['user'])}):")
+                    for var in variables["user"]:
+                        print(f"      • {var['name']} (updated: {var['updated_at'][:10] if var['updated_at'] else 'unknown'})")
+                
+                if secrets["user"]:
+                    print(f"   🔐 Secrets ({len(secrets['user'])}):")
+                    for secret in secrets["user"]:
+                        print(f"      • {secret['name']} (updated: {secret['updated_at'][:10] if secret['updated_at'] else 'unknown'})")
+            
+            # Display organization variables and secrets
+            if variables["organizations"] or secrets["organizations"]:
+                print(f"\n🏢 Organization Variables & Secrets:")
+                
+                # Combine and group by organization
+                all_org_items = {}
+                
+                for var in variables["organizations"]:
+                    owner = var['owner']
+                    if owner not in all_org_items:
+                        all_org_items[owner] = {"variables": [], "secrets": []}
+                    all_org_items[owner]["variables"].append(var)
+                
+                for secret in secrets["organizations"]:
+                    owner = secret['owner']
+                    if owner not in all_org_items:
+                        all_org_items[owner] = {"variables": [], "secrets": []}
+                    all_org_items[owner]["secrets"].append(secret)
+                
+                for org, items in all_org_items.items():
+                    var_count = len(items["variables"])
+                    secret_count = len(items["secrets"])
+                    print(f"\n   📂 {org} ({var_count} variables, {secret_count} secrets):")
+                    
+                    if items["variables"]:
+                        print(f"      📄 Variables:")
+                        for var in items["variables"]:
+                            visibility = f"({var['visibility']})" if var.get('visibility') else ""
+                            print(f"         • {var['name']} {visibility}")
+                    
+                    if items["secrets"]:
+                        print(f"      🔐 Secrets:")
+                        for secret in items["secrets"]:
+                            visibility = f"({secret['visibility']})" if secret.get('visibility') else ""
+                            print(f"         • {secret['name']} {visibility}")
+            
+            # Display repository variables and secrets
+            if variables["repositories"] or secrets["repositories"]:
+                print(f"\n📁 Repository Variables & Secrets:")
+                
+                # Combine and group by repository
+                all_repo_items = {}
+                
+                for var in variables["repositories"]:
+                    repo = var['repository']
+                    if repo not in all_repo_items:
+                        all_repo_items[repo] = {"variables": [], "secrets": []}
+                    all_repo_items[repo]["variables"].append(var)
+                
+                for secret in secrets["repositories"]:
+                    repo = secret['repository']
+                    if repo not in all_repo_items:
+                        all_repo_items[repo] = {"variables": [], "secrets": []}
+                    all_repo_items[repo]["secrets"].append(secret)
+                
+                for repo, items in all_repo_items.items():
+                    var_count = len(items["variables"])
+                    secret_count = len(items["secrets"])
+                    print(f"\n   📂 {repo} ({var_count} variables, {secret_count} secrets):")
+                    
+                    if items["variables"]:
+                        print(f"      📄 Variables:")
+                        for var in items["variables"]:
+                            print(f"         • {var['name']}")
+                    
+                    if items["secrets"]:
+                        print(f"      🔐 Secrets:")
+                        for secret in items["secrets"]:
+                            print(f"         • {secret['name']}")
+            
+            if total_vars == 0 and total_secrets == 0:
+                print("   No variables or secrets found or accessible")
+        
         # Download repositories if requested
         if download:
             download_stats = self.download_all_repositories(org_name, download_path, download_type)
@@ -715,11 +1056,16 @@ def main():
         default="all",
         help="Type of repositories to download (default: all)"
     )
+    parser.add_argument(
+        "--variables",
+        action="store_true",
+        help="Discover and report on accessible GitHub Actions variables and secrets"
+    )
     
     args = parser.parse_args()
     
     checker = GitHubPATChecker(args.token)
-    checker.run_analysis(args.org, args.json, args.download, args.download_path, args.download_type)
+    checker.run_analysis(args.org, args.json, args.download, args.download_path, args.download_type, args.variables)
 
 
 if __name__ == "__main__":
