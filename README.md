@@ -2,7 +2,7 @@
 
 **gimmePATz - GitHub Personal Access Token (PAT) recon tool**
 
-Have you ever found a GitHub PAT (personal access token) and wondered if it was valid or not?  If so, this tool is for you!  This tool should be useful for pentesters, bug bounty peeps and red team ninjas.  gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories or GitHub Organizations the PAT is attached too as well.
+Have you ever found a GitHub personal access token (PAT) and wondered: "Is this valid?" or "I wonder what I could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for GitHub PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories or GitHub Organisations the PAT is attached to as well.
 
 gimmepatz supports JSON output as well, so you can run it inline with other offensive security tools and filter using jq.  You can see some of my examples below.
 
