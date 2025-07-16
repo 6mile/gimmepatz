@@ -27,6 +27,9 @@ python gimmepatz.py GITHUB_TOKEN
 ### Advanced Usage
 
 ```bash
+# Discover secrets and variables
+python gimmepatz.py YOUR_GITHUB_TOKEN --variables
+
 # Include organization repositories
 python gimmepatz.py GITHUB_TOKEN --org GITHUB_ORGANIZATION
 
@@ -35,6 +38,18 @@ python gimmepatz.py GITHUB_TOKEN --json
 
 # Combined: organization repos + JSON output
 python gimmepatz.py GITHUB_TOKEN --org GITHUB_ORGANIZATION --json
+
+# Full assessment with JSON output
+python gimmepatz.py GITHUB_TOKEN --variables --org target-org --json > assessment.json
+
+# Download all accessible repositories
+python gimmepatz.py GITHUB_TOKEN --download
+
+# Download only private repositories
+python gimmepatz.py GITHUB_TOKEN --download --download-type private
+
+# Custom download location
+python gimmepatz.py GITHUB_TOKEN --download --download-path ./target-repos
 ```
 
 ## Installation
