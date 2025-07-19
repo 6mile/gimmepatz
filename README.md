@@ -1,55 +1,56 @@
-![gimmePATz](gimmepatz-github-banner.png)
+![gimmePATz](images/gimmepatz-github-banner.png)
 
-**gimmePATz - GitHub Personal Access Token (PAT) recon tool**
+**gimmePATz - Personal Access Token (PAT) recon tool**
 
-Have you ever found a GitHub personal access token (PAT) and wondered: "Is this valid?" or "I wonder what I could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for GitHub PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories or GitHub Organisations the PAT is attached to as well.
+Have you ever found a GitHub or a NPM personal access token (PAT) and wondered: "Is this valid?" or "I wonder what I could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories, NPM packages or GitHub Organisations the PAT is attached to as well.
 
 gimmepatz supports JSON output as well, so you can run it inline with other offensive security tools and filter using jq.  You can see some of my examples below.
 
 ## Features
 
-- 🔍 **Token Validation** - Verify if the PAT you found is valid and what does it have access to?
+- 🔍 **Token Validation** - Verify if the GitHub or NPM PAT you found is valid and what does it have access to?
 - 🔑 **Permission Analysis** - Detailed breakdown of token scopes with descriptions
 - 👤 **User Information** - Details about the user that created the PAT
 - 📁 **Repository Discovery** - Find all repositories attached to this PAT
 - 📋 **JSON Output** - Machine-readable format for automation
 - 🔒 **Privacy Separation** - Clearly distinguish between private and public repos
 - 🏢 **Organization Support** - Tells you what organizations are attached to this PAT
+- ⬇️  **Download Repos/Packages** - Download files and repos that are found
 
 ## Usage
 
 ### Basic Usage
 
 ```bash
-python gimmepatz.py GITHUB_TOKEN
+gimmepatz.py TOKEN
 ```
 
 ### Advanced Usage
 
 ```bash
 # Discover secrets and variables
-python gimmepatz.py YOUR_GITHUB_TOKEN --variables
+gimmepatz.py YOUR_TOKEN --variables
 
 # Include organization repositories
-python gimmepatz.py GITHUB_TOKEN --org GITHUB_ORGANIZATION
+gimmepatz.py TOKEN --org GITHUB_ORGANIZATION
 
 # JSON output for scripting
-python gimmepatz.py GITHUB_TOKEN --json
+gimmepatz.py TOKEN --json
 
 # Combined: organization repos + JSON output
-python gimmepatz.py GITHUB_TOKEN --org GITHUB_ORGANIZATION --json
+gimmepatz.py TOKEN --org GITHUB_ORGANIZATION --json
 
 # Full assessment with JSON output
-python gimmepatz.py GITHUB_TOKEN --variables --org target-org --json > assessment.json
+gimmepatz.py TOKEN --variables --org target-org --json > assessment.json
 
 # Download all accessible repositories
-python gimmepatz.py GITHUB_TOKEN --download
+gimmepatz.py TOKEN --download
 
 # Download only private repositories
-python gimmepatz.py GITHUB_TOKEN --download --download-type private
+gimmepatz.py TOKEN --download --download-type private
 
 # Custom download location
-python gimmepatz.py GITHUB_TOKEN --download --download-path ./target-repos
+gimmepatz.py TOKEN --download --download-path ./target-repos
 ```
 
 ## Installation
@@ -57,6 +58,7 @@ python gimmepatz.py GITHUB_TOKEN --download --download-path ./target-repos
 **Clone or download the script**
 ```bash
 git clone https://github.com/6mile/gimmepatz.git
+cd ./gimmepatz/ && chmod u+x ./gimmepatz.py
 ```
 
 ### Command Line Options
@@ -205,33 +207,6 @@ if token_data and token_data['token_valid']:
     print(f"Private repositories: {token_data['summary']['private_count']}")
 ```
 
-### Bash Script
-
-```bash
-#!/bin/bash
-
-TOKEN="ghp_your_token_here"
-OUTPUT=$(python gimmepatz.py "$TOKEN" --json)
-
-# Extract information using jq
-if command -v jq &> /dev/null; then
-    PRIVATE_COUNT=$(echo "$OUTPUT" | jq '.summary.private_count')
-    PUBLIC_COUNT=$(echo "$OUTPUT" | jq '.summary.public_count')
-    USER=$(echo "$OUTPUT" | jq -r '.user_info.login')
-    
-    echo "User: $USER"
-    echo "Private repos: $PRIVATE_COUNT"
-    echo "Public repos: $PUBLIC_COUNT"
-else
-    echo "jq not installed. Install with: apt-get install jq"
-fi
-```
-
-```bash
-#!/bin/bash
-python3 gimmepatz.py 
-```
-
 ## Token Scopes Reference
 
 | Scope | Description |
@@ -258,8 +233,8 @@ python3 gimmepatz.py
 1. **Never commit tokens to version control**
 2. **Use environment variables for tokens**
    ```bash
-   export GITHUB_TOKEN="your_token_here"
-   python gimmepatz.py "$GITHUB_TOKEN"
+   export TOKEN="your_token_here"
+   gimmepatz.py "$TOKEN"
    ```
 3. **Regularly audit your tokens** using this tool
 4. **Use minimal required scopes** for each token
@@ -302,7 +277,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Changelog
 
-### v1.0.0
+### v0.1.0
 - Initial release
 - Token validation and scope analysis
 - Repository discovery with privacy separation
@@ -310,6 +285,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Organization repository support
 - ASCII art branding
 
+### v0.3.0
+- Added NPM token validation
+- Added GitHub Variables and Secrets detection
+- Added ability to download repositories found via --download
 ---
 
-**Made with ❤️ for GitHub security and token management**
+**Made with ❤️  by @6mile for my offsec homies**
