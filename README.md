@@ -30,7 +30,7 @@ gimmepatz.py TOKEN
 
 ```bash
 # Discover secrets and variables
-gimmepatz.py YOUR_TOKEN --variables
+gimmepatz.py TOKEN --variables
 
 # Include organization repositories
 gimmepatz.py TOKEN --org GITHUB_ORGANIZATION
