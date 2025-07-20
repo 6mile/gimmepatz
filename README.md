@@ -2,7 +2,7 @@
 
 ## :smirk_cat: gimmePATz :smirk_cat: - Personal Access Token (PAT) recon tool
 
-Have you ever found a GitHub or a NPM personal access token (PAT) and wondered: "Is this valid?" or "I wonder what I could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories, NPM packages or GitHub Organisations the PAT is attached to as well.
+Have you ever found a GitHub or a NPM personal access token (PAT) and wondered: "Is this valid?" or "I wonder what a bad guy could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories, NPM packages or GitHub Organisations the PAT is attached to as well.
 
 gimmepatz supports JSON output as well, so you can run it inline with other offensive security tools and filter using jq.  You can see some of my examples below.
 
