@@ -12,6 +12,7 @@ gimmepatz supports JSON output as well, so you can run it inline with other offe
 - 🔑 **Permission Analysis** - Detailed breakdown of token scopes with descriptions
 - 👤 **User Information** - Details about the user that created the PAT
 - 📁 **Repository Discovery** - Find all repositories attached to this PAT
+- ☢️  **Enumerate Variables & Secrets** - Identify any GitHub Variables or Secrets the PAT has access to
 - 📋 **JSON Output** - Machine-readable format for automation
 - 🔒 **Privacy Separation** - Clearly distinguish between private and public repos
 - 🏢 **Organization Support** - Tells you what organizations are attached to this PAT
