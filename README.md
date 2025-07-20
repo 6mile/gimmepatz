@@ -25,6 +25,10 @@ gimmepatz supports JSON output as well, so you can run it inline with other offe
 ```bash
 gimmepatz.py TOKEN
 ```
+### Prerequisites
+- Python 3.6+
+- `requests` library # ```pip install requests```
+- `git` (for repository downloading)
 
 ### Advanced Usage
 
@@ -66,15 +70,16 @@ cd ./gimmepatz/ && chmod u+x ./gimmepatz.py
 
 | Option | Description |
 |--------|-------------|
-| `token` | GitHub Personal Access Token (required) |
-| `--org ORG_NAME` | Include repositories from a specific organization |
-| `--json` | Output results in JSON format for scripting |
-| `--download` | Download the GitHub repositories that the PAT has access to |
-| `--download-type` | Define what repository types you want: public, private, or all |
-| `--download-path` DOWNLOAD_PATH | Explictly define where you want to save any repositories that gimmePATz finds |
-| `--variables` | Enumerate and display any GitHub Variables or Secrets the PAT has access to |
-| `--var-target` | Define what variables you want gimmePATz to identify: all, user, repo, repository, org, organization |
-| `--help` | Show help message and exit |
+| `--json` | Output results in JSON format |
+| `--variables`, `--var` | Enumerate GitHub variables and secrets |
+| `--var-target` | Target scope: `all`, `user`, `repo`, `org` |
+| `--var-name` | Specific repository or organization name |
+| `--download` | Download all accessible repositories |
+| `--download-path` | Custom download directory (default: `repos`) |
+| `--download-type` | Filter: `all`, `private`, `public` |
+| `--org` | Include specific GitHub organization analysis |
+| `--debug` | Enable verbose debug output |
+| `--scan` | Scan local files for PATs |
 
 ## Output Examples
 
@@ -88,20 +93,49 @@ cd ./gimmepatz/ && chmod u+x ./gimmepatz.py
 | (_| | | | | | | | | | | | |  __/ |   | | | || |/ /
  \__, |_|_| |_| |_|_| |_| |_|\___\_|   \_| |_/\_/___|
   __/ |
- |___/      "GitHub Personal Access Token recon tool"
+ |___/             "Personal Access Token recon tool"
  ----------------------------------------------------
                                            by @6mile
 
 ✅ Token is valid
 
 👤 Authenticated as: octocat
-   Name: The Octocat
+   Name: Octocat Maclean
    Account type: User
+   Public repos: 4
+   Private repos: 3
+   Followers: 9714
+   Following: 731
 
-🔑 Token Scopes (3 total):
-   • repo
-   • user
+🏢 Organization Memberships (2 total):
+   👤 Space-Force-Beta (member)
+      Name: Space-Force-Beta
+      Description: Building cool stuff for space
+      Public repos: 2
+      Private repos: 1
+      URL: https://github.com/Space-Force-Beta
+
+   👑 ThrifyBank (admin)
+      Description: The thriftiest Neo Bank in Kansas!
+      Public repos: 1
+      Private repos: 5
+      URL: https://github.com/thrifybank-kansas
+
+🔑 Token Scopes (14 total):
+   • codespace:secrets
    • notifications
+   • read:audit_log
+   • read:discussion
+   • read:enterprise
+   • read:org
+   • read:packages
+   • read:project
+   • read:public_key
+   • read:repo_hook
+   • read:user
+   • repo
+   • user:email
+   • workflow
 
 Scope Descriptions:
 --------------------------------------------------
@@ -119,18 +153,36 @@ Scope Descriptions:
    • 15 private repositories
    • 10 public repositories
 
-🔒 Private Repositories (15):
+🔒 Private Repositories (9):
 
-   📂 mycompany (8 private repos):
-      • mycompany/internal-api (admin)
-      • mycompany/secret-project (write)
-      • mycompany/config-files (read)
+   📂 octocat (3 private repos):
+      • octocat/internal-api (admin)
+      • octocat/database (admin)
+      • octocat/external-api (admin)
 
-🔓 Public Repositories (10):
+   📂 Space-Force-Beta (1 private repos):
+      • Space-Force-Beta/destrukto-beam (admin)
 
-   📂 octocat (6 public repos):
-      • octocat/awesome-project (admin)
-      • octocat/tutorial-code (admin)
+   📂 ThriftyBank (5 private repos):
+      • thriftybank-kansas/web (admin)
+      • thriftybank-kansas/docker (admin)
+      • thriftybank-kansas/database-int (admin)
+      • thriftybank-kansas/bank-vault (admin)
+      • thriftybank-kansas/SAAS-PORTAL (admin)
+
+🔓 Public Repositories (7):
+
+   📂 octocat (4 public repos):
+      • octocat/sdk (admin)
+      • octocat/helpdesk-docs (admin)
+      • octocat/aws-sdk-helpers (admin)
+      • octocat/stinkyCaptain (admin)
+
+   📂 Space-Force-Beta (1 public repos):
+      • Space-Force-Beta/destrukto-beam (admin)
+
+   📂 thrifybank-kansas (1 public repos):
+      • thrifybank-kansas/node-restify (admin)
 ```
 
 ### JSON Output
@@ -184,33 +236,6 @@ Scope Descriptions:
     "owners": ["mycompany", "octocat"]
   }
 }
-```
-
-## Integration Examples
-
-### Python Script
-
-```python
-import subprocess
-import json
-
-def analyze_github_token(token):
-    """Analyze a GitHub token and return structured data."""
-    result = subprocess.run([
-        'python', 'gimmepatz.py', token, '--json'
-    ], capture_output=True, text=True)
-    
-    if result.returncode == 0:
-        return json.loads(result.stdout)
-    else:
-        return None
-
-# Usage
-token_data = analyze_github_token('ghp_your_token_here')
-if token_data and token_data['token_valid']:
-    print(f"Token belongs to: {token_data['user_info']['login']}")
-    print(f"Total repositories: {token_data['summary']['total_repos']}")
-    print(f"Private repositories: {token_data['summary']['private_count']}")
 ```
 
 ## Token Scopes Reference
