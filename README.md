@@ -2,11 +2,13 @@
 
 ## :smirk_cat: gimmePATz :smirk_cat: - Personal Access Token (PAT) recon tool
 
-Have you ever found a GitHub or a NPM personal access token (PAT) and wondered: "Is this valid?" or "I wonder what a bad guy could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories, NPM packages or GitHub Organisations the PAT is attached to as well.
+Have you ever found a GitHub or a NPM personal access token (PAT) and wondered "Is this valid?" or "I wonder what a bad guy could do with this?" Well, if so, I've got the tool for you! 
 
-gimmepatz supports JSON output as well, so you can run it inline with other offensive security tools and filter using jq.  You can see some of my examples below.
+Introducing gimmePatz, a comprehensive reconnaissance tool for PATs. gimmePATz will tell you if a PAT is valid, and what kind of PAT it is.  It provides information about the user account that created the PAT, including what organizations that user is part of and how many followers they have.  gimmePATz will show you what scopes a PAT has and what variables or secrets the PAT has access to.  gimmePATz will list what repositories, NPM packages or GitHub Organisations the PAT is attached to as well, and tell you exactly what permissions the PAT has to each resource.  This tool is designed for offensive security practitioners, like bug bounty hunters, pentesters and red teams.  By using this tool, you agree to use it in a legal context.
 
-## Features
+You can point gimmePATz at a file and it will find all the PATs in that file and let you know if they are valid.  gimmepatz supports JSON output as well, so you can save the output in JSON, and/or pipe the output of gimmePATz into other tools like jq.  You can see some examples of the different ways to use gimmePATz in the "Advanced Usage" section below.
+
+### Features
 
 - 🔍 **Token Validation** - Verify if the GitHub or NPM PAT you found is valid and what does it have access to?
 - 🔑 **Permission Analysis** - Detailed breakdown of token scopes with descriptions
@@ -18,7 +20,6 @@ gimmepatz supports JSON output as well, so you can run it inline with other offe
 - 🏢 **Organization Support** - Tells you what organizations are attached to this PAT
 - ⬇️  **Download Repos/Packages** - Download files and repos that are found
 
-## Usage
 
 ### Basic Usage
 
@@ -45,7 +46,7 @@ gimmepatz.py TOKEN --json
 # Combined: organization repos + JSON output
 gimmepatz.py TOKEN --org GITHUB_ORGANIZATION --json
 
-# Full assessment with JSON output
+# Save the output of gimmePATz in JSON output to a file
 gimmepatz.py TOKEN --variables --org target-org --json > assessment.json
 
 # Download all accessible repositories
@@ -61,7 +62,7 @@ gimmepatz.py TOKEN --download --download-path ./target-repos
 gimmepatz.py --scan ./example-file.json
 ```
 
-## Installation
+### Installation
 
 **Clone or download the script**
 ```bash
@@ -84,9 +85,7 @@ cd ./gimmepatz/ && chmod u+x ./gimmepatz.py
 | `--debug` | Enable verbose debug output |
 | `--scan` | Scan local files for PATs |
 
-## Output Examples
-
-### Human-Readable Output
+### Output Examples
 
 ```
        _                         ______  ___ _____
@@ -241,7 +240,7 @@ Scope Descriptions:
 }
 ```
 
-## Token Scopes Reference
+### Token Scopes Reference
 
 | Scope | Description |
 |-------|-------------|
@@ -262,7 +261,7 @@ Scope Descriptions:
 | `read:packages` | Read access to GitHub packages |
 | `delete_repo` | Delete access to repositories |
 
-## Security Best Practices
+### Security Best Practices
 
 1. **Never commit tokens to version control**
 2. **Use environment variables for tokens**
@@ -275,7 +274,7 @@ Scope Descriptions:
 5. **Set expiration dates** on your tokens when possible
 6. **Rotate tokens regularly** as part of security hygiene
 
-## Troubleshooting
+### Troubleshooting
 
 ### Common Issues
 
@@ -301,17 +300,17 @@ Scope Descriptions:
 - `403`: Rate limit exceeded or insufficient permissions
 - `404`: Resource not found (user/organization doesn't exist)
 
-## Contributing
+### Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-## License
+### License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Changelog
+### Changelog
 
-### v0.1.0
+#### v0.1.0
 - Initial release
 - Token validation and scope analysis
 - Repository discovery with privacy separation
@@ -319,7 +318,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Organization repository support
 - ASCII art branding
 
-### v0.3.0
+#### v0.3.0
 - Added NPM token validation
 - Added GitHub Variables and Secrets detection
 - Added ability to download repositories found via --download
