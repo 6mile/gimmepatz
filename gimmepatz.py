@@ -2834,7 +2834,6 @@ def main():
   __/ |
  |___/            "Personal Access Token recon tool"
  ----------------------------------------------------
-                           ENHANCED NPM ACCESS EDITION
                                           by @6mile
         """)
     
