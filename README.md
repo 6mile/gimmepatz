@@ -1,6 +1,6 @@
 ![gimmePATz](images/gimmepatz-github-banner.png)
 
-**gimmePATz - Personal Access Token (PAT) recon tool**
+## :github_octocat: gimmePATz :github_octocat: - Personal Access Token (PAT) recon tool
 
 Have you ever found a GitHub or a NPM personal access token (PAT) and wondered: "Is this valid?" or "I wonder what I could do with this?" Well, if so, I've got the tool for you! Introducing gimmePatz, a recon tool for PATs. Designed for bug bounty hunters, pentesters and red teams.  Gimmepatz will tell you what scopes a PAT has, and it will tell you what repositories, NPM packages or GitHub Organisations the PAT is attached to as well.
 
