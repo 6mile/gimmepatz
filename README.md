@@ -69,6 +69,11 @@ cd ./gimmepatz/ && chmod u+x ./gimmepatz.py
 | `token` | GitHub Personal Access Token (required) |
 | `--org ORG_NAME` | Include repositories from a specific organization |
 | `--json` | Output results in JSON format for scripting |
+| `--download` | Download the GitHub repositories that the PAT has access to |
+| `--download-type` | Define what repository types you want: public, private, or all |
+| `--download-path` DOWNLOAD_PATH | Explictly define where you want to save any repositories that gimmePATz finds |
+| `--variables` | Enumerate and display any GitHub Variables or Secrets the PAT has access to |
+| `--var-target` | Define what variables you want gimmePATz to identify: all, user, repo, repository, org, organization |
 | `--help` | Show help message and exit |
 
 ## Output Examples
