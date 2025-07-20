@@ -56,6 +56,9 @@ gimmepatz.py TOKEN --download --download-type private
 
 # Custom download location
 gimmepatz.py TOKEN --download --download-path ./target-repos
+
+# Scan a file to see if it has any PATs in it
+gimmepatz.py --scan ./example-file.json
 ```
 
 ## Installation
