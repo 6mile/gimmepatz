@@ -5,7 +5,6 @@ gimmePATz - Personal Access Token recon tool
 This script automatically detects and analyzes GitHub PATs and NPM tokens
 by parsing their format and validating against appropriate services.
 
-ENHANCED VERSION with accurate NPM package access detection.
 """
 
 import argparse
@@ -23,6 +22,9 @@ from urllib.parse import urlparse
 import base64
 import hashlib
 
+# Version information
+__version__ = "0.3.1"
+__author__ = "@6mile"
 
 class TokenDetector:
     """Automatic token type detection and classification"""
@@ -1723,7 +1725,7 @@ class GitHubPATChecker:
                     })
                     
         except requests.RequestException as e:
-            if self.is_fine_grained:
+            if self.is_fine_grained and not getattr(self, 'json_mode', False):
                 print(f"      ⚠️  Fine-grained PAT may not have required permissions for user variables")
             pass  # User variables might not be accessible
         
@@ -2761,9 +2763,21 @@ class EnhancedTokenEnumerator:
             print("\n✅ No tokens found in scanned files")
 
 
+def show_version():
+    """Display version information"""
+    print(f"""
+gimmePATz v{__version__} - Author: {__author__}
+GitHub: https://github.com/6mile/gimmepatz
+    """)
+
 def main():
     parser = argparse.ArgumentParser(
         description="Enhanced multi-platform token enumeration and analysis tool with advanced NPM access detection"
+    )
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Show version information and exit"
     )
     parser.add_argument(
         "token",
@@ -2822,9 +2836,14 @@ def main():
     
     args = parser.parse_args()
     
-    # Show banner only if not JSON output
+    # Handle version flag
+    if args.version:
+        show_version()
+        sys.exit(0)
+    
+    # Show Title/banner only if not JSON output
     if not args.json:
-        print("""
+        print(f"""
        _                         ______  ___ _____
       (_)                        | ___ \/ _ \_   _|
   __ _ _ _ __ ___  _ __ ___   ___| |_/ / /_\ \| |____
@@ -2874,6 +2893,7 @@ def main():
         print("     ./gimmepatz.py ghp_token --org myorg --download")
         print("     ./gimmepatz.py ghp_token --variables")
         print("     ./gimmepatz.py ghp_token --var --var-target repo --var-name owner/repo")
+        print("     ./gimmepatz.py --version")
         print("   Use --help for more information")
 
 
