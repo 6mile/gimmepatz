@@ -1105,9 +1105,17 @@ class NPMTokenChecker:
 class GitHubPATChecker:
     """GitHub PAT functionality - fully restored"""
     
-    def __init__(self, token: str):
+    def __init__(self, token: str, ghe: str):
         self.token = token
-        self.base_url = "https://api.github.com"
+
+        # If GitHub Enterprise, use custom URL
+        if ghe:
+            self.base_url = f"https://{ghe}"
+            self.route = f"/api/v3"
+        else:
+            self.base_url = "https://api.github.com"
+            self.route = ""
+
         self.headers = {
             "Authorization": f"token {token}",
             "Accept": "application/vnd.github.v3+json"
@@ -1133,7 +1141,7 @@ class GitHubPATChecker:
     def check_token_validity(self) -> bool:
         """Check if the token is valid by making a simple API call."""
         try:
-            response = self.session.get(f"{self.base_url}/user")
+            response = self.session.get(f"{self.base_url + self.route}/user")
             return response.status_code == 200
         except requests.RequestException:
             return False
@@ -1141,7 +1149,7 @@ class GitHubPATChecker:
     def get_token_scopes(self) -> List[str]:
         """Get the scopes/permissions of the PAT."""
         try:
-            response = self.session.get(f"{self.base_url}/user")
+            response = self.session.get(f"{self.base_url + self.route}/user")
             if response.status_code == 200:
                 # GitHub returns scopes in the X-OAuth-Scopes header
                 scopes_header = response.headers.get('X-OAuth-Scopes', '')
@@ -1157,7 +1165,7 @@ class GitHubPATChecker:
     def get_rate_limit_info(self) -> Dict:
         """Get rate limit information for the token."""
         try:
-            response = self.session.get(f"{self.base_url}/rate_limit")
+            response = self.session.get(f"{self.base_url + self.route}/rate_limit")
             if response.status_code == 200:
                 return response.json()
             else:
@@ -1168,7 +1176,7 @@ class GitHubPATChecker:
     def get_user_info(self) -> Dict:
         """Get information about the authenticated user."""
         try:
-            response = self.session.get(f"{self.base_url}/user")
+            response = self.session.get(f"{self.base_url + self.route}/user")
             if response.status_code == 200:
                 return response.json()
             else:
@@ -1185,7 +1193,7 @@ class GitHubPATChecker:
         while True:
             try:
                 response = self.session.get(
-                    f"{self.base_url}/user/repos",
+                    f"{self.base_url + self.route}/user/repos",
                     params={
                         "per_page": per_page,
                         "page": page,
@@ -1226,7 +1234,7 @@ class GitHubPATChecker:
         while True:
             try:
                 response = self.session.get(
-                    f"{self.base_url}/user/orgs",
+                    f"{self.base_url + self.route}/user/orgs",
                     params={"per_page": per_page, "page": page}
                 )
                 
@@ -1250,7 +1258,7 @@ class GitHubPATChecker:
                             "description": org_details.get("description", org.get("description", "")),
                             "public_repos": org_details.get("public_repos", 0),
                             "private_repos": org_details.get("total_private_repos", 0),
-                            "url": org.get("html_url", f"https://github.com/{org_login}"),
+                            "url": org.get("html_url", f"{self.base_url}/{org_login}"),
                             "role": self.get_user_role_in_org(org_login, user_login)
                         })
                     
@@ -1273,7 +1281,7 @@ class GitHubPATChecker:
     def get_organization_details(self, org_login: str) -> Dict:
         """Get detailed information about an organization."""
         try:
-            response = self.session.get(f"{self.base_url}/orgs/{org_login}")
+            response = self.session.get(f"{self.base_url + self.route}/orgs/{org_login}")
             
             if response.status_code == 200:
                 return response.json()
@@ -1290,7 +1298,7 @@ class GitHubPATChecker:
             
         try:
             # First try to get membership info
-            response = self.session.get(f"{self.base_url}/orgs/{org_login}/memberships/{user_login}")
+            response = self.session.get(f"{self.base_url + self.route}/orgs/{org_login}/memberships/{user_login}")
             
             if response.status_code == 200:
                 membership = response.json()
@@ -1300,7 +1308,7 @@ class GitHubPATChecker:
                 return "member"
             else:
                 # Try alternative method - check if user can access org details
-                org_response = self.session.get(f"{self.base_url}/orgs/{org_login}")
+                org_response = self.session.get(f"{self.base_url + self.route}/orgs/{org_login}")
                 if org_response.status_code == 200:
                     org_data = org_response.json()
                     # If we can see private info, we might be an admin
@@ -1321,7 +1329,7 @@ class GitHubPATChecker:
         while True:
             try:
                 response = self.session.get(
-                    f"{self.base_url}/orgs/{org_name}/repos",
+                    f"{self.base_url + self.route}/orgs/{org_name}/repos",
                     params={
                         "per_page": per_page,
                         "page": page,
@@ -1361,37 +1369,57 @@ class GitHubPATChecker:
     def print_scope_descriptions(self, scopes: List[str]):
         """Print descriptions of what each scope allows."""
         scope_descriptions = {
-            "repo": "Full access to repositories",
-            "repo:status": "Access to commit status",
-            "repo_deployment": "Access to deployment statuses",
-            "public_repo": "Access to public repositories",
-            "repo:invite": "Access to repository invitations",
-            "security_events": "Access to security events",
-            "admin:repo_hook": "Full access to repository hooks",
-            "write:repo_hook": "Write access to repository hooks",
-            "read:repo_hook": "Read access to repository hooks",
-            "admin:org": "Full access to organization, teams, and memberships",
-            "write:org": "Write access to organization and teams",
-            "read:org": "Read access to organization and teams",
-            "admin:public_key": "Full access to public keys",
-            "write:public_key": "Write access to public keys",
-            "read:public_key": "Read access to public keys",
-            "admin:org_hook": "Full access to organization hooks",
-            "gist": "Write access to gists",
-            "notifications": "Access to notifications",
-            "user": "Access to user profile information",
-            "user:email": "Access to user email addresses",
-            "user:follow": "Access to follow/unfollow users",
-            "delete_repo": "Delete access to repositories",
-            "write:discussion": "Write access to team discussions",
-            "read:discussion": "Read access to team discussions",
-            "write:packages": "Write access to GitHub packages",
-            "read:packages": "Read access to GitHub packages",
-            "delete:packages": "Delete access to GitHub packages",
-            "admin:gpg_key": "Full access to GPG keys",
-            "write:gpg_key": "Write access to GPG keys",
-            "read:gpg_key": "Read access to GPG keys",
-            "workflow": "Access to GitHub Actions workflows"
+                "repo": "Full control of private repositories",
+                "repo:status": "Access commit status",
+                "repo_deployment": "Access deployment status",
+                "public_repo": "Access public repositories",
+                "repo:invite": "Access repository invitations",
+                "security_events": "Read and write security events",
+                "workflow": "Update GitHub Action workflows",
+                "write:packages": "Upload packages to GitHub Package Registry",
+                "read:packages": "Download packages from GitHub Package Registry",
+                "delete:packages": "Delete packages from GitHub Package Registry",
+                "admin:org": "Full control of orgs and teams, read and write org projects",
+                "write:org": "Read and write org and team membership, read and write org projects",
+                "read:org": "Read org and team membership, read org projects",
+                "manage_runners:org": "Manage org runners and runner groups",
+                "admin:public_key": "Full control of user public keys",
+                "write:public_key": "Write user public keys",
+                "read:public_key": "Read user public keys",
+                "admin:repo_hook": "Full control of repository hooks",
+                "write:repo_hook": "Write repository hooks",
+                "read:repo_hook": "Read repository hooks",
+                "admin:org_hook": "Full control of organization hooks",
+                "gist": "Create gists",
+                "notifications": "Access notifications",
+                "user": "Update ALL user data",
+                "read:user": "Read ALL user profile data",
+                "user:email": "Access user email addresses (read-only)",
+                "user:follow": "Follow and unfollow users",
+                "delete_repo": "Delete repositories",
+                "write:discussion": "Read and write team discussions",
+                "read:discussion": "Read team discussions",
+                "admin:enterprise": "Full control of enterprises",
+                "manage_runners:enterprise": "Manage enterprise runners and runner groups",
+                "manage_billing:enterprise": "Read and write enterprise billing data",
+                "read:enterprise": "Read enterprise profile data",
+                "scim:enterprise": "Provisioning of users and groups via SCIM",
+                "audit_log": "Full control of audit log",
+                "read:audit_log": "Read access of audit log",
+                "codespace": "Full control of codespaces",
+                "codespace:secrets": "Ability to create, read, update, and delete codespace secrets",
+                "copilot": "Full control of GitHub Copilot settings and seat assignments",
+                "manage_billing:copilot": "View and edit Copilot Business seat assignments",
+                "write:network_configurations": "Write org hosted compute network configurations",
+                "read:network_configurations": "Read org hosted compute network configurations",
+                "project": "Full control of projects",
+                "read:project": "Read access of projects",
+                "admin:gpg_key": "Full control of public user GPG keys",
+                "write:gpg_key": "Write public user GPG keys",
+                "read:gpg_key": "Read public user GPG keys",
+                "admin:ssh_signing_key": "Full control of public user SSH signing keys",
+                "write:ssh_signing_key": "Write public user SSH signing keys",
+                "read:ssh_signing_key": "Read public user SSH signing keys"
         }
         
         print("\nScope Descriptions:")
@@ -1697,7 +1725,7 @@ class GitHubPATChecker:
                 return variables
             
             # Try to get user codespace secrets (if accessible)
-            response = self.session.get(f"{self.base_url}/user/codespaces/secrets")
+            response = self.session.get(f"{self.base_url + self.route}/user/codespaces/secrets")
             if response.status_code == 200:
                 secrets_data = response.json()
                 for secret in secrets_data.get('secrets', []):
@@ -1711,7 +1739,7 @@ class GitHubPATChecker:
                     })
             
             # Try to get user variables (newer GitHub feature)
-            response = self.session.get(f"{self.base_url}/user/variables")
+            response = self.session.get(f"{self.base_url + self.route}/user/variables")
             if response.status_code == 200:
                 variables_data = response.json()
                 for variable in variables_data.get('variables', []):
@@ -1750,7 +1778,7 @@ class GitHubPATChecker:
             
             # Get repository variables
             response = self.session.get(
-                f"{self.base_url}/repos/{repo_name}/actions/variables",
+                f"{self.base_url + self.route}/repos/{repo_name}/actions/variables",
                 headers=headers
             )
             
@@ -1777,7 +1805,7 @@ class GitHubPATChecker:
                     print(f"        ⚠️  Rate limited accessing {repo_name}, waiting...")
                 time.sleep(2)
                 response = self.session.get(
-                    f"{self.base_url}/repos/{repo_name}/actions/variables",
+                    f"{self.base_url + self.route}/repos/{repo_name}/actions/variables",
                     headers=headers
                 )
                 if response.status_code == 200:
@@ -1795,7 +1823,7 @@ class GitHubPATChecker:
             # Get repository secrets (names only, values are not readable)
             time.sleep(0.1)  # Small delay
             response = self.session.get(
-                f"{self.base_url}/repos/{repo_name}/actions/secrets",
+                f"{self.base_url + self.route}/repos/{repo_name}/actions/secrets",
                 headers=headers
             )
             
@@ -1816,7 +1844,7 @@ class GitHubPATChecker:
                     print(f"        ⚠️  Rate limited accessing {repo_name} secrets, waiting...")
                 time.sleep(2)
                 response = self.session.get(
-                    f"{self.base_url}/repos/{repo_name}/actions/secrets",
+                    f"{self.base_url + self.route}/repos/{repo_name}/actions/secrets",
                     headers=headers
                 )
                 if response.status_code == 200:
@@ -1834,7 +1862,7 @@ class GitHubPATChecker:
             # Get repository environments
             time.sleep(0.1)  # Small delay
             response = self.session.get(
-                f"{self.base_url}/repos/{repo_name}/environments",
+                f"{self.base_url + self.route}/repos/{repo_name}/environments",
                 headers=headers
             )
             
@@ -1846,7 +1874,7 @@ class GitHubPATChecker:
                     # Get environment variables
                     time.sleep(0.1)
                     env_vars_response = self.session.get(
-                        f"{self.base_url}/repos/{repo_name}/environments/{env_name}/variables",
+                        f"{self.base_url + self.route}/repos/{repo_name}/environments/{env_name}/variables",
                         headers=headers
                     )
                     
@@ -1866,7 +1894,7 @@ class GitHubPATChecker:
                     # Get environment secrets
                     time.sleep(0.1)
                     env_secrets_response = self.session.get(
-                        f"{self.base_url}/repos/{repo_name}/environments/{env_name}/secrets",
+                        f"{self.base_url + self.route}/repos/{repo_name}/environments/{env_name}/secrets",
                         headers=headers
                     )
                     
@@ -1888,7 +1916,7 @@ class GitHubPATChecker:
                 # Try accessing repository configuration
                 time.sleep(0.1)
                 config_response = self.session.get(
-                    f"{self.base_url}/repos/{repo_name}",
+                    f"{self.base_url + self.route}/repos/{repo_name}",
                     headers=headers
                 )
                 
@@ -1898,9 +1926,9 @@ class GitHubPATChecker:
                     if repo_data.get('permissions', {}).get('admin', False):
                         # Try to get additional repository settings that might contain variables
                         settings_endpoints = [
-                            f"{self.base_url}/repos/{repo_name}/actions/permissions",
-                            f"{self.base_url}/repos/{repo_name}/actions/permissions/selected-actions",
-                            f"{self.base_url}/repos/{repo_name}/actions/permissions/workflow"
+                            f"{self.base_url + self.route}/repos/{repo_name}/actions/permissions",
+                            f"{self.base_url + self.route}/repos/{repo_name}/actions/permissions/selected-actions",
+                            f"{self.base_url + self.route}/repos/{repo_name}/actions/permissions/workflow"
                         ]
                         
                         for endpoint in settings_endpoints:
@@ -1948,7 +1976,7 @@ class GitHubPATChecker:
             
             # Get organization variables
             response = self.session.get(
-                f"{self.base_url}/orgs/{org_name}/actions/variables",
+                f"{self.base_url + self.route}/orgs/{org_name}/actions/variables",
                 headers=headers
             )
             
@@ -1975,7 +2003,7 @@ class GitHubPATChecker:
             
             # Get organization secrets (names only, values are not readable)
             response = self.session.get(
-                f"{self.base_url}/orgs/{org_name}/actions/secrets",
+                f"{self.base_url + self.route}/orgs/{org_name}/actions/secrets",
                 headers=headers
             )
             
@@ -1994,7 +2022,7 @@ class GitHubPATChecker:
             
             # Get organization codespace secrets
             response = self.session.get(
-                f"{self.base_url}/orgs/{org_name}/codespaces/secrets",
+                f"{self.base_url + self.route}/orgs/{org_name}/codespaces/secrets",
                 headers=headers
             )
             
@@ -2015,17 +2043,17 @@ class GitHubPATChecker:
             if self.is_fine_grained:
                 # Check organization permissions and settings
                 org_response = self.session.get(
-                    f"{self.base_url}/orgs/{org_name}",
+                    f"{self.base_url + self.route}/orgs/{org_name}",
                     headers=headers
                 )
                 
                 if org_response.status_code == 200:
                     # Try to get organization-level settings that might contain configuration
                     settings_endpoints = [
-                        f"{self.base_url}/orgs/{org_name}/actions/permissions",
-                        f"{self.base_url}/orgs/{org_name}/actions/permissions/repositories",
-                        f"{self.base_url}/orgs/{org_name}/actions/permissions/selected-actions",
-                        f"{self.base_url}/orgs/{org_name}/actions/permissions/workflow"
+                        f"{self.base_url + self.route}/orgs/{org_name}/actions/permissions",
+                        f"{self.base_url + self.route}/orgs/{org_name}/actions/permissions/repositories",
+                        f"{self.base_url + self.route}/orgs/{org_name}/actions/permissions/selected-actions",
+                        f"{self.base_url + self.route}/orgs/{org_name}/actions/permissions/workflow"
                     ]
                     
                     for endpoint in settings_endpoints:
@@ -2261,13 +2289,14 @@ class EnhancedTokenEnumerator:
             '.md', '.txt', '.conf', '.config', '.ini', '.properties', '.toml'
         ]
 
-    def run_github_analysis(self, token: str, org_name: Optional[str] = None, 
+    def run_github_analysis(self, token: str, ghe: str = None,
+                           org_name: Optional[str] = None,
                            json_output: bool = False, download: bool = False, 
                            download_path: str = "repos", download_type: str = "all",
                            enumerate_vars: bool = False, var_target: str = "all",
                            var_name: Optional[str] = None):
         """Run comprehensive GitHub PAT analysis with all original features"""
-        checker = GitHubPATChecker(token)
+        checker = GitHubPATChecker(token, ghe)
         
         # Set JSON mode flag for the checker to suppress warnings
         checker.json_mode = json_output
@@ -2681,7 +2710,7 @@ class EnhancedTokenEnumerator:
         
         return results
 
-    def run_token_scan(self, scan_path: str):
+    def run_token_scan(self, scan_path: str, ghe: str):
         """Run comprehensive token scanning"""
         print(f"\n🔍 Multi-Platform Token Discovery")
         print("=" * 50)
@@ -2717,7 +2746,7 @@ class EnhancedTokenEnumerator:
                 print(f"   File: {token_info['file']}:{token_info['line']}")
                 
                 if token_type == 'github':
-                    checker = GitHubPATChecker(token)
+                    checker = GitHubPATChecker(token, ghe)
                     if checker.check_token_validity():
                         print("   ✅ VALID TOKEN")
                         user_info = checker.get_user_info()
@@ -2783,6 +2812,10 @@ def main():
         "token",
         nargs="?",
         help="Token to analyze (automatically detects type)"
+    )
+    parser.add_argument(
+        "--ghe",
+        help="Use a GitHub Enterprise URL"
     )
     parser.add_argument(
         "--scan",
@@ -2862,14 +2895,15 @@ def main():
     
     # Run appropriate analysis
     if args.scan:
-        enumerator.run_token_scan(args.scan)
+        enumerator.run_token_scan(args.scan, args.ghe)
     elif args.token:
         # Detect token type and run appropriate analysis
         token_type = detector.detect_token_type(args.token)
         
         if token_type == 'github':
             enumerator.run_github_analysis(
-                args.token, 
+                args.token,
+                args.ghe,
                 args.org, 
                 args.json, 
                 args.download, 
@@ -2889,6 +2923,7 @@ def main():
         print("   Examples:")
         print("     ./gimmepatz.py ghp_1234567890abcdef")
         print("     ./gimmepatz.py npm_1234567890abcdef")
+        print("     ./gimmepatz.py --ghe https://your.enterprise.tld")
         print("     ./gimmepatz.py --scan /path/to/project")
         print("     ./gimmepatz.py ghp_token --org myorg --download")
         print("     ./gimmepatz.py ghp_token --variables")
