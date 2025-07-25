@@ -40,6 +40,9 @@ gimmepatz.py TOKEN --variables
 # Include organization repositories
 gimmepatz.py TOKEN --org GITHUB_ORGANIZATION
 
+# Use GitHub Enterprise
+gimmepatz.py --ghe https://your.enterprise.tld
+
 # JSON output for scripting
 gimmepatz.py TOKEN --json
 
@@ -74,6 +77,7 @@ cd ./gimmepatz/ && chmod u+x ./gimmepatz.py
 
 | Option | Description |
 |--------|-------------|
+| `--ghe` | Use your GitHub Enterprise server |
 | `--json` | Output results in JSON format |
 | `--variables`, `--var` | Enumerate GitHub variables and secrets |
 | `--var-target` | Target scope: `all`, `user`, `repo`, `org` |
@@ -244,22 +248,57 @@ Scope Descriptions:
 
 | Scope | Description |
 |-------|-------------|
-| `repo` | Full access to repositories |
-| `public_repo` | Access to public repositories only |
-| `repo:status` | Access to commit status |
-| `repo_deployment` | Access to deployment statuses |
-| `user` | Access to user profile information |
-| `user:email` | Access to user email addresses |
-| `user:follow` | Access to follow/unfollow users |
-| `admin:org` | Full access to organization, teams, and memberships |
-| `write:org` | Write access to organization and teams |
-| `read:org` | Read access to organization and teams |
-| `gist` | Write access to gists |
-| `notifications` | Access to notifications |
-| `workflow` | Access to GitHub Actions workflows |
-| `write:packages` | Write access to GitHub packages |
-| `read:packages` | Read access to GitHub packages |
-| `delete_repo` | Delete access to repositories |
+| `repo` | Full control of private repositories |
+| `repo:status` | Access commit status |
+| `repo_deployment` | Access deployment status |
+| `public_repo` | Access public repositories |
+| `repo:invite` | Access repository invitations |
+| `security_events` | Read and write security events |
+| `workflow` | Update GitHub Action workflows |
+| `write:packages` | Upload packages to GitHub Package Registry |
+| `read:packages` | Download packages from GitHub Package Registry |
+| `delete:packages` | Delete packages from GitHub Package Registry |
+| `admin:org` | Full control of orgs and teams, read and write org projects |
+| `write:org` | Read and write org and team membership, read and write org projects |
+| `read:org` | Read org and team membership, read org projects |
+| `manage_runners:org` | Manage org runners and runner groups |
+| `admin:public_key` | Full control of user public keys |
+| `write:public_key` | Write user public keys |
+| `read:public_key` | Read user public keys |
+| `admin:repo_hook` | Full control of repository hooks |
+| `write:repo_hook` | Write repository hooks |
+| `read:repo_hook` | Read repository hooks |
+| `admin:org_hook` | Full control of organization hooks |
+| `gist` | Create gists |
+| `notifications` | Access notifications |
+| `user` | Update ALL user data |
+| `read:user` | Read ALL user profile data |
+| `user:email` | Access user email addresses (read-only) |
+| `user:follow` | Follow and unfollow users |
+| `delete_repo` | Delete repositories |
+| `write:discussion` | Read and write team discussions |
+| `read:discussion` | Read team discussions |
+| `admin:enterprise` | Full control of enterprises |
+| `manage_runners:enterprise` | Manage enterprise runners and runner groups |
+| `manage_billing:enterprise` | Read and write enterprise billing data |
+| `read:enterprise` | Read enterprise profile data |
+| `scim:enterprise` | Provisioning of users and groups via SCIM |
+| `audit_log` | Full control of audit log |
+| `read:audit_log` | Read access of audit log |
+| `codespace` | Full control of codespaces |
+| `codespace:secrets` | Ability to create, read, update, and delete codespace secrets |
+| `copilot` | Full control of GitHub Copilot settings and seat assignments |
+| `manage_billing:copilot` | View and edit Copilot Business seat assignments |
+| `write:network_configurations` | Write org hosted compute network configurations |
+| `read:network_configurations` | Read org hosted compute network configurations |
+| `project` | Full control of projects |
+| `read:project` | Read access of projects |
+| `admin:gpg_key` | Full control of public user GPG keys |
+| `write:gpg_key` | Write public user GPG keys |
+| `read:gpg_key` | Read public user GPG keys |
+| `admin:ssh_signing_key` | Full control of public user SSH signing keys |
+| `write:ssh_signing_key` | Write public user SSH signing keys |
+| `read:ssh_signing_key` | Read public user SSH signing keys
 
 ### Security Best Practices
 
